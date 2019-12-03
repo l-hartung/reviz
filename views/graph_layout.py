@@ -138,7 +138,7 @@ class GraphLayouter:
             layers_between = self.layers_between(first_layer, second_layer)
             previous_node = long_edge.to_node
             for between in layers_between:
-                dummyname = "{}/{}/{between.name}".format(long_edge.from_node.name,
+                dummyname = "{}/{}/{}".format(long_edge.from_node.name,
                                                           long_edge.to_node.name,
                                                           between.name)
                 dummy = between.create_dummy_node(dummyname)

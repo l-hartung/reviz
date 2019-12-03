@@ -704,10 +704,10 @@ def view_sugiyama_summary(graph, tex, deviation, transitivities, trans_bold, cit
                         \\node ({})[draw=none] at (0,-0.75) {{{}}};'''.format(year, '|')
                 else:
                     tikzCode += '''
-                        \\node ({})[right= 0.57cm of {}, draw=none] {{{}}};'''.format(year, previous, '|')
+                        \\node ({})[right= 0.59cm of {}, draw=none] {{{}}};'''.format(year, previous, '|')
                     previous = year
 
-            scale_const = 2.2
+            scale_const = 2.3
             tikzCode += '''\\draw[thick, ->] (0,-0.75) -- ({},-0.75);'''.format(scale_const * years_dist - 1)
 
             for year in range(0, years_dist):
