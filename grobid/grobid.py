@@ -9,7 +9,7 @@ def run_grobid(jsFile, pdf, tei):
     with open(jsFile, 'r') as file:
         jsonfile = json.load(file)
 
-    client = GrobidClient()
+    client = GrobidClient(config_path='/reviz-code/grobid/grobid-config.json')
 
     finalArticles = jsonfile['final selection articles']
 
@@ -28,4 +28,5 @@ def run_grobid(jsFile, pdf, tei):
                 print(article['note'])
                 client.process_citations(article['note'], tei)
             else:
+                print('{} was not found'.format(article['note']))
                 continue

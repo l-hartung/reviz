@@ -27,7 +27,7 @@ class ApiClient(object):
             username=None,
             api_key=None,
             status_endpoint=None,
-            timeout=60
+            timeout=320
     ):
         """ Initialise client.
 

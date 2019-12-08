@@ -33,6 +33,7 @@ class GrobidClient(ApiClient):
             config_json = open(path).read()
             self.config = json.loads(config_json)
         else:
+            print('grobid-config.json was not found. Using default settings: localhost:8070')
             self.config = {
                 "batch_size" : 1,
                 "grobid_port": "8070",
