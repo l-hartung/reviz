@@ -5,13 +5,14 @@ services:
     stdin_open: true
     tty: true
     depends_on: 
+      # if you don't need parsifal, the next line can be removed
       - parsifal
       - grobid
     entrypoint: python /reviz-code/reviz.py
     volumes: 
-      # change the left part up to the colon to an existing path on your host machine
+      # if needed, change the left part up to the colon to an existing path on your host machine
       # put any PDF, JSON and Bib files you need in this folder
-      - /reviz:/reviz 
+      - ./:/reviz 
   parsifal:
     image: lhartung22/parsifal
     ports: 
@@ -20,8 +21,8 @@ services:
       # change this value to a random string
       - SECRET_KEY=jksidzfhiwenflkajsoguialieiiutzfahwa0e5
     volumes: 
-      # change the left part up to the colon to an existing path on your host machine
-      - /parsifal-db:/parsifal-db
+      # if needed, change the left part up to the colon to an existing path on your host machine
+      - ./parsifal-db:/parsifal-db
     command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver [::]:8000"
   grobid:
     image: lfoppiano/grobid:0.5.6
