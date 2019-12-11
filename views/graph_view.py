@@ -350,7 +350,7 @@ def view_sugiyama_summary(graph, tex, deviation, transitivities, trans_bold, cit
     :param transitivities: summarizes transitive edges
     :param trans_bold: adapt line width of transitive edges
     :param citations: count number of direct and indirect citations for every noce
-    :param authors_colored: color publications with same authors
+    :param authors_colored: threshold for coloring publications with same authors
     """
 
     years = graph['years']
@@ -366,8 +366,8 @@ def view_sugiyama_summary(graph, tex, deviation, transitivities, trans_bold, cit
     for i in range(max_year-min_year+1):
         edge_dict[i] = 0
 
-    if authors_colored:
-        match_authors = find_same_authors(graph['articles'], 0.3)
+    if authors_colored >= 0 and authors_colored <= 1:
+        match_authors = find_same_authors(graph['articles'], authors_colored)
 
         cluster_color_dict = {1: 'authorcolor1',
                              2: 'authorcolor5',
@@ -496,7 +496,7 @@ def view_sugiyama_summary(graph, tex, deviation, transitivities, trans_bold, cit
                         y += y_factor*dummy_factor
                     else:
                         if node.kind == 'Merge':
-                            if authors_colored:
+                            if authors_colored >= 0 and authors_colored <= 1:
                                 color1 = match_author_dict[node.data['art1']['key']]
                                 color2 = match_author_dict[node.data['art2']['key']]
                                 if 'art3' in node.data:
@@ -560,7 +560,7 @@ def view_sugiyama_summary(graph, tex, deviation, transitivities, trans_bold, cit
                                     name, layer_id*x_factor, y, table)
                                 y += merge_two_factor
                         else:
-                            if authors_colored:
+                            if authors_colored >= 0 and authors_colored <= 1:
                                 color = match_author_dict[node.name]
                             if citations:
                                 if node.citations == 0:
@@ -747,8 +747,8 @@ def view_sugiyama_summary(graph, tex, deviation, transitivities, trans_bold, cit
     \\renewcommand{\\arraystretch}{1}%
     \\scriptsize'''
 
-    if trans_bold or citations or authors_colored:
-        if trans_bold and not citations and not authors_colored:
+    if trans_bold or citations or (authors_colored >= 0 and authors_colored <= 1):
+        if trans_bold and not citations and not (authors_colored >= 0 and authors_colored <= 1):
             tikzCode += '''
             \\begin{tabular}{p{5cm}}'''
         else:
@@ -760,7 +760,7 @@ def view_sugiyama_summary(graph, tex, deviation, transitivities, trans_bold, cit
     \\draw[line width=2.5, ->] (0,0) -- (1,0);
     \\end{tikzpicture} \\parbox[c]{3cm}{left out transitive edges increase arrow size}'''
 
-    if authors_colored:
+    if authors_colored >= 0 and authors_colored <= 1:
         color = 'authorcolor1'
     else:
         color = 'black'
@@ -774,7 +774,7 @@ def view_sugiyama_summary(graph, tex, deviation, transitivities, trans_bold, cit
         \\end{tikzpicture} \\newline'''
         tikzCode += '''
         R: Reference '''
-        if authors_colored:
+        if authors_colored >= 0 and authors_colored <= 1:
             tikzCode += '''\\newline (colored articles \\newline share authors) \\newline'''
         else:
             tikzCode += '''\\newline'''
@@ -803,7 +803,7 @@ def view_sugiyama_summary(graph, tex, deviation, transitivities, trans_bold, cit
         \\end{tikzpicture} \\parbox[c]{1.4cm}{most \\newline citations} \\newline '''
         tikzCode += '''\\rule{{0pt}}{{0.8cm}}'''
 
-    if authors_colored and not citations:
+    if (authors_colored >= 0 and authors_colored <= 1) and not citations:
         tikzCode += '''
                \\begin{tikzpicture}'''
         tikzCode += '''
@@ -816,13 +816,13 @@ def view_sugiyama_summary(graph, tex, deviation, transitivities, trans_bold, cit
     if trans_bold:
         tikzCode += '''{}'''.format(trans_bold_legend)
 
-    if trans_bold or citations or authors_colored:
+    if trans_bold or citations or (authors_colored >= 0 and authors_colored <= 1):
         tikzCode += '''
         \\end{tabular}'''
 
     if years_dist <= 5:
         if correction_table != '':
-            if citations or trans_bold or authors_colored:
+            if citations or trans_bold or (authors_colored >= 0 and authors_colored <= 1):
                 tikzCode += '\\\\'
 
     tikzCode += correction_table

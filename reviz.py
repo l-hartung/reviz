@@ -28,7 +28,7 @@ parser.add_argument("--deviation", help="maximum number of edge deviations allow
 parser.add_argument("--transitivities", help="reduce number of edges by considering transitivities", action="store_true")
 parser.add_argument("--transitivities-bold", help="adapt line width of transitive edges", action="store_true")
 parser.add_argument("--citation-counts", help="show number of direct and indirect citations for every node", action="store_true")
-parser.add_argument("--authors-colored", help="show publications with same authors using colors", action="store_true")
+parser.add_argument("--authors-colored", help="threshold for showing publications with same authors using colors, use a value between 0 and 1", type=float, default=-1 )
 
 args = parser.parse_args()
 
