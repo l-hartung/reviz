@@ -31,7 +31,7 @@ def calculate_merge_three(matches, candidate, subgraph, deviation, len_factor, d
                                                                                              'to')
         diff_sum = diff1_f + diff2_f + diff3_f + diff1_t + diff2_t + diff3_t
         diff_sum_2 = diff12_f + diff12_t + diff23_f + diff23_t + diff13_f + diff13_t
-        if (len(diff_sum) <= deviation) and (len(diff_sum_2) <= deviation):  # TODO: Umgang mit diff_sum_2
+        if (len(diff_sum) <= deviation) and (len(diff_sum_2) <= deviation):
             c_len = float(len(same_f) + len(same_t))
             score = c_len * len_factor - len(diff_sum) * dev_factor
             three_candidate = {
@@ -123,14 +123,6 @@ def calculate_merges(subgraph, deviation):
                             if comp.index(can) in indices:
                                 indices.remove(comp.index(can))
 
-        # TODO: Die Dreier-Kandidaten-Suche ist greedy. Kandidat 1 wird immer zuerst untersucht und in mögliche
-        # dreier-Kombinantionen gesetzt. Wenn davon eine mögllich ist, wird diese genommen, selbst wenn Kandidat 1
-        # zb relativ wenig in same_from und same_to hat und andere Kombinationen unterhalb der matches mit Kandidat1
-        # dann möglicherweise besser wären. Idee: entweder alle Kombinationen der matches untereinander auch untersuchen
-        # und das Optimum suchen, oder die Kandidaten Listen shuffeln und mehrmals greedy ausführen und davon das
-        # Optimum nehmen
-
-        # TODO: len_factor und div_factor anpassen, len_factor sollte größere Rolle spielen!
 
         indices = list(range(len(comp)))
         while len(indices) > 0:

@@ -4,6 +4,11 @@ import os
 
 
 def run_flow(jsFile, tex):
+    """
+    generates a flow diagram from a json parsifal export
+    :param jsFile: path to json export from parsifal
+    :param tex: path to tex files
+    """
     with open(jsFile, 'r') as file:
         jsonfile = json.load(file)
 
@@ -18,7 +23,11 @@ def run_flow(jsFile, tex):
     for article in articles:
         sourceID = article['source_id']
         status = article['status']
-        status_dict[status] += 1
+        if status == 'U':
+            print("The article '{}' is not classified and will not be included in the flow diagram!".format(article['title']))
+            num_articles -= 1
+        else:
+            status_dict[status] += 1
         for source in sources:
             if sourceID == source['id']:
                 sourceName = source['name']

@@ -23,7 +23,7 @@ def run_graph(jsFile, tei, tex):
     for article in articles:
         if article['note'] is None:
             continue
-        if article['year'] is not None:  # TODO: Handling von Artikeln ohne Jahr
+        if article['year'] is not None:
             years.append(int(article['year']))
 
     graph['years'] = years
