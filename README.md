@@ -1,6 +1,21 @@
 # ReviewVisualisation (ReViz)
 
-ReViz is a tool for generating visualisations in systematic literature reviews (SLRs). Using this tool, two kinds of visualisations can be generated from review metadata. On the one hand, a flow diagram that illustrates the selection process of the contributions considered for inclusion can be obtained. On the other hand, the citations between the included articles can be depicted using a citation graph, enabling possibilities for further in-depth analyses. 
+ReViz is a tool for generating visualisations in systematic literature reviews (SLRs). Using this tool, two kinds of visualisations can be generated from review metadata. On the one hand, a flow diagram that illustrates the selection process of the contributions considered for inclusion can be obtained. On the other hand, the citations between the included articles can be depicted using a citation graph, enabling possibilities for further in-depth analyses.
+
+Please cite our paper about ReViz whenever you use ReViz to generate citation graphs and add these citation graphs to your scientific papers and other publications:
+
+**Sven Groppe, Lina Hartung, ReViz: A Tool for Automatically Generating Citation Graphs and Variants, International Conference on Asian Digital Libraries (ICADL): Digital Libraries at Times of Massive Societal Transition, online, https://doi.org/10.1007/978-3-030-64452-9_10**
+
+BibTex Code of our paper:
+
+    @inproceedings{Groppe2020_5,
+      title = {ReViz: A Tool for Automatically Generating Citation Graphs and Variants},
+      author = {Sven Groppe and Lina Hartung},
+      booktitle = {International Conference on Asian Digital Libraries (ICADL): Digital Libraries at Times of Massive Societal Transition},
+      year = {2020},
+      note = {online},
+      url = {https://doi.org/10.1007/978-3-030-64452-9_10}
+    }
 
 To generate the graphics two kinds of input data are allowed. One is a bibtex-file with all included articles for the citations graph. Using this input, it is also possible to generate citation graphs without conducting a review. However, for the generation of a flow diagram it is mandatory to use the other input: a json-export from [this fork of Parsifal](https://github.com/l-hartung/parsifal), a tool to support systematic reviews.
 
