@@ -6,14 +6,15 @@ from model.generate_bib import generate_bib
 from utils.utils import key_to_md5, find_urls, find_author
 
 
-def run_graph(jsFile, tei, tex):
+def run_graph(jsFile, tei, tex, original_bibtex_keys, without_interactive_queries):
     with open(jsFile, 'r') as file: #encoding='utf8'
         jsonfile = json.load(file)
 
     articles = jsonfile['final selection articles']
 
-    for article in articles:
-        article['bibtex_key'] = key_to_md5(article['bibtex_key'])
+    if(not(original_bibtex_keys)):
+        for article in articles:
+            article['bibtex_key'] = key_to_md5(article['bibtex_key'])
 
     with open(os.path.join(tex, 'library.bib'), 'w') as l:
         l.write(generate_bib(articles))
@@ -83,7 +84,7 @@ def run_graph(jsFile, tei, tex):
                     if 'doi' not in art:
                         art['doi'] = ''
                     if art['title'] is not article['title']:  # article should not cite itself
-                        if citation_matching(art['doi'], refdoi, art['title'], reftitle, artauthors, refauthors):
+                        if citation_matching(art['doi'], refdoi, art['title'], reftitle, artauthors, refauthors, without_interactive_queries):
                             graph['edges'].append({'from': article['bibtex_key'],
                                                    'to': art['bibtex_key']})
                             break

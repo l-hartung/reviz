@@ -7,6 +7,7 @@ import os
 import json
 from views.graph_view import view_sugiyama, view_sugiyama_summary
 from utils.utils import bib_to_json
+import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument("action", help="""
@@ -29,9 +30,17 @@ parser.add_argument("--transitivities", help="reduce number of edges by consider
 parser.add_argument("--transitivities-bold", help="adapt line width of transitive edges", action="store_true")
 parser.add_argument("--citation-counts", help="show number of direct and indirect citations for every node", action="store_true")
 parser.add_argument("--authors-colored", help="threshold for showing publications with same authors using colors, use a value between 0 and 1", type=float, default=-1 )
+parser.add_argument("--with-single-nodes", help="nodes without any edge are displayed in the graph", action="store_true")
+parser.add_argument("--minimum-citations", help="only nodes with the given minimum number of citations are displayed", type=float, default=0)
+parser.add_argument("--original-bibtex-keys", help="the original bibtex keys are used instead of md5 hashes", action="store_true")
+parser.add_argument("--without-dummy-nodes", help="avoid dummy nodes for better placement of nodes for long edges", action="store_true")
+parser.add_argument("--dont-show-edge-corrections", help="do not show the list of edge corrections", action="store_true")
+parser.add_argument("--y-factor", help="factor for spacing between boxes", type=float, default=1)
+parser.add_argument("--without-interactive-queries", help="with this option you are not asked for manual confirmation if our algorithm is not completely certain that a citation match was found", action="store_true")
 
 args = parser.parse_args()
 
+sys.setrecursionlimit(1000000000)
 if args.action == "bib2json":
     if args.bib_file is None:
         raise argparse.ArgumentError("argument bib-file is missing")
@@ -47,7 +56,7 @@ if args.action == "grobid":
 if args.action == "graph-model":
     if not os.path.exists(args.tex):
         os.makedirs(args.tex)
-    run_graph(args.json, args.tei, args.tex)
+    run_graph(args.json, args.tei, args.tex, args.original_bibtex_keys, args.without_interactive_queries)
 
 if args.action == "flow":
     if not os.path.exists(args.tex):
@@ -58,9 +67,9 @@ if 'draw' in args.action:
     with open(os.path.join(args.tex, 'graph-model.json')) as f:
         graph = json.load(f)
     if args.action == "draw":
-        view_sugiyama(graph, args.tex)
+        view_sugiyama(graph, args.tex, args.with_single_nodes, args.without_dummy_nodes)
     if args.action == "draw-summary":
         view_sugiyama_summary(graph, args.tex, args.deviation, args.transitivities, args.transitivities_bold,
-                              args.citation_counts, args.authors_colored)
+                              args.citation_counts, args.authors_colored, args.with_single_nodes, args.minimum_citations, args.without_dummy_nodes, args.dont_show_edge_corrections, args.y_factor)
     if args.bib:
         run_bib(args.tex)

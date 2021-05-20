@@ -1,5 +1,6 @@
-from utils.utils import compare_edges, article_match_criterion, compare_candidates
+from utils.utils import compare_edges, compare_edges_numerical, article_match_criterion, compare_candidates
 from views.component_finder import CandidateComponentFinder
+import gc
 
 
 def calculate_merge_three(matches, candidate, subgraph, deviation, len_factor, dev_factor):
@@ -45,45 +46,76 @@ def calculate_merge_three(matches, candidate, subgraph, deviation, len_factor, d
     return mt
 
 
-def calculate_merges(subgraph, deviation):
+def calculate_merges(subgraph, deviation, minimum_citations):
     """
     calculates all possible node-merges of a subgraph given a specific number of edge deviations allowed for merge nodes
     and selects the best of them
     :param subgraph: currently examined subgraph
     :param deviation: number of edges that are allowed to deviate within a merge node
+    :param minimum_citations: only nodes with the given number of citations are merged
     :return: list of all calculated merges with their particular articles and shared or differed edges
     """
     merge_candidates = []
     len_factor = 1
     dev_factor = 0.5
-    for art1 in subgraph['articles']:
-        for art2 in subgraph['articles']:
+    for i in range(len(subgraph['articles'])):
+        art1 = subgraph['articles'][i]
+        for j in range(i+1,len(subgraph['articles'])-1,1):
+            art2 = subgraph['articles'][j]
             if (art1['key'] == art2['key']) or (art1['year'] != art2['year']):
                 continue
             if any(filter(lambda mc: mc['art1'] == art2['key'] and mc['art2'] == art1['key'], merge_candidates)):
                 continue
-            same_from, diff1_from, diff2_from = compare_edges(art1['from'], art2['from'])
-            same_to, diff1_to, diff2_to = compare_edges(art1['to'], art2['to'])
-            diff_sum = diff1_from + diff2_from + diff1_to + diff2_to
-            if (len(diff_sum) <= deviation) and (len(same_from) + len(same_to) > 0):
-                c_len = float(len(same_from) + len(same_to))
-                score = c_len * len_factor - len(diff_sum) * dev_factor
+            if(len(art1['to'])<minimum_citations or len(art2['to'])<minimum_citations):
+                continue
+            
+            same_fromSize = 0
+            diff1_fromSize = 0
+            for elem in art1['from']:
+                if elem in art2['from']:
+                    same_fromSize = same_fromSize + 1
+                else:
+                    diff1_fromSize = diff1_fromSize + 1
+            diff2_fromSize = 0
+            for elem in art2['from']:
+                if not(elem in art1['from']):
+                    diff2_fromSize = diff2_fromSize + 1
+            
+            same_toSize = 0
+            diff1_toSize = 0
+            for elem in art1['to']:
+                if elem in art2['to']:
+                    same_toSize = same_toSize + 1
+                else:
+                    diff1_toSize = diff1_toSize + 1
+            diff2_toSize = 0
+            for elem in art2['to']:
+                if not(elem in art1['to']):
+                    diff2_toSize = diff2_toSize + 1
+            
+            diff_sumSize = diff1_fromSize + diff2_fromSize + diff1_toSize + diff2_toSize
+            if (diff_sumSize <= deviation) and (same_fromSize + same_toSize > 0):
+                same_from, diff1_from, diff2_from = compare_edges(art1['from'], art2['from'])
+                same_to, diff1_to, diff2_to = compare_edges(art1['to'], art2['to'])
+                c_len = float(same_fromSize + same_toSize)
+                score = c_len * len_factor - diff_sumSize * dev_factor
                 candidate = {
                     'art1': art1['key'], 'art2': art2['key'], 'same_from': same_from, 'diff1_from': diff1_from,
                     'diff2_from': diff2_from, 'same_to': same_to, 'diff1_to': diff1_to, 'diff2_to': diff2_to,
-                    'dev': len(diff_sum), 'score': score
+                    'dev': diff_sumSize, 'score': score
                 }
-                print(candidate)
                 merge_candidates.append(candidate)
 
     ccf = CandidateComponentFinder(merge_candidates)
     candidate_components = ccf.merge_candidate_components()
 
+    print("iterate through candidate components...")
     merges = []
     for comp in candidate_components:
         indices = list(range(len(comp)))
         while len(indices) > 0:
             merge_three_candidates = []
+            merge_three = None
             index = indices.pop(0)
             candidate = comp[index]
             flag = False
@@ -151,6 +183,13 @@ def calculate_merges(subgraph, deviation):
                     if match['score'] > score:
                         score = match['score']
                         best = match
-                    indices.remove(comp.index(match))
+                    toBeRemoved = comp.index(match)
+                    if toBeRemoved in indices:
+                        indices.remove(comp.index(match))
+                    else :
+                        print("The following item is not in indices:")
+                        print(toBeRemoved)
+                        print("indices:")
+                        print(indices)
                 merges.append(best)
     return merges

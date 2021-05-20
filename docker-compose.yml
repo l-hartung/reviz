@@ -1,13 +1,16 @@
 version: '3'
 services: 
   reviz:
+    build:
+      context: .
+      dockerfile: Dockerfile
     image: lhartung22/reviz
     stdin_open: true
     tty: true
-    depends_on: 
+#    depends_on: 
       # if you don't need parsifal, the next line can be removed
-      - parsifal
-      - grobid
+#      - parsifal
+#      - grobid
     entrypoint: python /reviz-code/reviz.py
     volumes: 
       # if needed, change the left part up to the colon to an existing path on your host machine
