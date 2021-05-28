@@ -65,6 +65,7 @@ class GraphLayouter:
                 if x.data['art1']['key'] == node_name or x.data['art2']['key'] == node_name \
                         or ('art3' in x.data and x.data['art3']['key'] == node_name):
                     return x
+            print(node_name)
             raise StopIteration()
 
     def find_layer_by_name(self, layer_name):
@@ -126,26 +127,29 @@ class GraphLayouter:
                     matching_layer = self.find_layer_by_name(article["year"])
                     matching_layer.create_node(article)
 
-    def insert_dummys(self):
+    def insert_dummys(self, minimum_citations, without_dummy_nodes):
         """inserts dummy nodes for all edges that run between more than one layer, for each of these layers one dummy
         node will be inserted and the original edge is splitted in small edges connecting the dummy nodes"""
         self.calculate_edge_spans()
         self.long_edges = list(filter(lambda e: e.span > 1, self.edges))
         self.short_edges = list(filter(lambda e: e.span <= 1, self.edges))
         for long_edge in self.long_edges:
+            if(long_edge.from_node.kind=='Node' and len(long_edge.from_node.data['to'])<minimum_citations):
+                continue
             first_layer = long_edge.from_node.layer
             second_layer = long_edge.to_node.layer
             layers_between = self.layers_between(first_layer, second_layer)
             previous_node = long_edge.to_node
-            for between in layers_between:
-                dummyname = "{}/{}/{}".format(long_edge.from_node.name,
-                                                          long_edge.to_node.name,
-                                                          between.name)
-                dummy = between.create_dummy_node(dummyname)
-                dummy_edge = Edge(dummy, previous_node, span=1)
-                self.edges.append(dummy_edge)
-                previous_node = dummy
-                long_edge.dummyedges.append(dummy_edge)
+            if(not(without_dummy_nodes)):
+                for between in layers_between:
+                    dummyname = "{}/{}/{}".format(long_edge.from_node.name,
+                                                              long_edge.to_node.name,
+                                                              between.name)
+                    dummy = between.create_dummy_node(dummyname)
+                    dummy_edge = Edge(dummy, previous_node, span=1)
+                    self.edges.append(dummy_edge)
+                    previous_node = dummy
+                    long_edge.dummyedges.append(dummy_edge)
             last_edge = Edge(long_edge.from_node,
                              previous_node, span=1)
             long_edge.dummyedges.append(last_edge)

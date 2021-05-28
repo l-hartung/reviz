@@ -56,6 +56,8 @@ def find_matching_authors(artauthors, otherauthors):
     """
     counter = 0
     number = len(artauthors) + len(otherauthors)
+    if len(artauthors)==0 or len(otherauthors)==0:
+        return counter, number
     for author in artauthors:
         if author == artauthors[0]:
             if author == otherauthors[0]:

@@ -22,11 +22,12 @@ def evaluation(edges, layers, nodes, edge_dict, node_fromEdges, node_toEdges, no
     return edge_dict, node_fromEdges, node_toEdges, node_edges, node_counter
 
 
-def generate_correction_table(global_merges, trans_edges_leave):
+def generate_correction_table(global_merges, trans_edges_leave, minimum_citations):
     """
     generates table containing edge correction and left out transitive edges for the legend
     :param global_merges: list of all merged nodes
     :param trans_edges_leave: list of all left out transitive edges
+    :param minimum_citations: only nodes with the given minimum number of citations are displayed
     :return: tikz code for the table
     """
     mergeCode = ''
@@ -46,6 +47,8 @@ def generate_correction_table(global_merges, trans_edges_leave):
             mergeCode += edge_correction(merge, 'diff13_to', '-', 'to', 'art2')
     transCode = ''
     for trans in trans_edges_leave:
+        if(trans.from_node.kind == 'Node' and trans.from_node.citations<minimum_citations and trans.to_node.kind == 'Node' and trans.to_node.citations<minimum_citations):
+                continue
         if trans.from_node.kind == 'Merge':
             from_name = '\\cite[...]{{{}}}'.format(trans.from_node.data['art1']['key'])
         else:
@@ -159,7 +162,8 @@ def generate_tikz_header(tikzpic=True):
     :return: tex-header
     """
     tikzCode = """ 
-        \\RequirePackage{luatex85}
+        % if using pdflatex and large graphs, then run 'pdflatex --extra-mem-bot=10000000 graph.tex'
+        %\\RequirePackage{luatex85}
         \\documentclass{standalone}
         \\usepackage{tikz}
         \\usepackage[style=alphabetic]{biblatex}
@@ -167,9 +171,9 @@ def generate_tikz_header(tikzpic=True):
         \\usepackage[utf8]{inputenc}
         \\usepackage[T1]{fontenc}
         \\usepackage{filecontents}
-        \\usetikzlibrary{graphdrawing}
+        %\\usetikzlibrary{graphdrawing}
         \\usetikzlibrary{graphs}
-        \\usegdlibrary{layered}
+        %\\usegdlibrary{layered}
         %\\usegdlibrary{force}
         \\usepackage{tikz-layers}
         \\def\SPSB#1#2{\\rlap{\\textsuperscript{#1}}\\SB{#2}}
@@ -237,18 +241,20 @@ def generate_tikz_foot(tikzpic=True):
     return tikzCode
 
 
-def view_sugiyama(graph, tex):
+def view_sugiyama(graph, tex, withSingleNodes, without_dummy_nodes):
     """
     render graph model to citation graph without optimizations
     :param graph: json graph model
     :param tex: folder where to put generated files
+    :param withSingleNodes: single nodes without any edges are displayed (in case of False are these nodes left out)
+    :param without_dummy_nodes: dummy nodes are added (False) for better placement of nodes in case of long edges or left out (True)
     """
 
     years = graph['years']
     min_year = min(years)
     max_year = max(years)
 
-    cf = ComponentFinder(graph)
+    cf = ComponentFinder(graph, withSingleNodes)
     cf.merge_components()
     subgraphs = cf.get_subgraphs()
 
@@ -262,7 +268,7 @@ def view_sugiyama(graph, tex):
     for subgraph in subgraphs:
         subgraph['years'] = years
         gl = graph_layout.GraphLayouter(subgraph)
-        gl.insert_dummys()
+        gl.insert_dummys(False, without_dummy_nodes)
         gl.crossing_minimization()
 
         tikzCode += '''
@@ -335,13 +341,14 @@ def view_sugiyama(graph, tex):
 
     tikzCode += generate_tikz_foot(False)
 
+    print(tikzCode)
     with open(os.path.join(tex, 'graph.tex'), 'w') as file:
         file.write(tikzCode)
 
     build_all('graph', tex)
 
 
-def view_sugiyama_summary(graph, tex, deviation, transitivities, trans_bold, citations, authors_colored):
+def view_sugiyama_summary(graph, tex, deviation, transitivities, trans_bold, citations, authors_colored, withSingleNodes, minimum_citations, without_dummy_nodes, dont_show_edge_corrections, y_factor):
     """
     render graph model into citation graph with optional optimizations
     :param graph: json graph model
@@ -351,8 +358,13 @@ def view_sugiyama_summary(graph, tex, deviation, transitivities, trans_bold, cit
     :param trans_bold: adapt line width of transitive edges
     :param citations: count number of direct and indirect citations for every noce
     :param authors_colored: threshold for coloring publications with same authors
+    :param withSingleNodes: single nodes without any edges are displayed (in case of False are these nodes left out)
+    :param minimum_citations: only nodes with the given number of citations are displayed
+    :param without_dummy_nodes: dummy nodes are added (False) for better placement of nodes in case of long edges or left out (True)
+    :param dont_show_edge_corrections: list of edge corrections are left out
     """
 
+    print("start view_sugiyama_summary")
     years = graph['years']
     min_year = min(years)
     max_year = max(years)
@@ -385,7 +397,7 @@ def view_sugiyama_summary(graph, tex, deviation, transitivities, trans_bold, cit
                 if id+1 in cluster_color_dict:
                     match_author_dict[m] = cluster_color_dict[id+1]
 
-    cf = ComponentFinder(graph)
+    cf = ComponentFinder(graph, withSingleNodes)
     cf.merge_components()
     subgraphs = cf.get_subgraphs()
 
@@ -400,7 +412,7 @@ def view_sugiyama_summary(graph, tex, deviation, transitivities, trans_bold, cit
     trans_edges_leave = []
 
     for subgraph in subgraphs:
-        merges = calculate_merges(subgraph, deviation)
+        merges = calculate_merges(subgraph, deviation, minimum_citations)
         for merge in merges:
             global_merges.append(merge)
             for merge in merges:
@@ -413,10 +425,10 @@ def view_sugiyama_summary(graph, tex, deviation, transitivities, trans_bold, cit
                     find_merge_keys(merge, 'diff12_to', merges)
                     find_merge_keys(merge, 'diff13_to', merges)
                     find_merge_keys(merge, 'diff23_to', merges)
-
+        
         subgraph['years'] = years
         gl = graph_layout.GraphLayouter(subgraph, merges=merges)
-        gl.insert_dummys()
+        gl.insert_dummys(minimum_citations, without_dummy_nodes)
         gl.crossing_minimization()
 
         tikzCode += '''
@@ -426,7 +438,7 @@ def view_sugiyama_summary(graph, tex, deviation, transitivities, trans_bold, cit
 
         cit_list = []
         for node in gl.all_nodes():
-            if citations:
+#            if citations:
                 indcitations = []
                 if node.kind != "Dummy":
                     if node.kind == "Merge":
@@ -447,19 +459,19 @@ def view_sugiyama_summary(graph, tex, deviation, transitivities, trans_bold, cit
                         node.citations = len(list(filter(lambda x: x.to_node.name == node.name, gl.all_edges)))
                         node.indcitations = len(calculate_indirect_citations(node.name, graph['edges'], indcitations))
                         cit_list.append(node.indcitations)
-            else:
-                if node.kind!= "Dummy":
-                    if node.kind == 'Merge':
-                        node.citations1 = ''
-                        node.citations2 = ''
-                        node.indcitations1 = ''
-                        node.indcitations2 = ''
-                        if 'art3' in node.data:
-                            node.citations3 = ''
-                            node.indcitations3 = ''
-                    else:
-                        node.citations = ''
-                        node.indcitations = ''
+#            else:
+#                if node.kind!= "Dummy":
+#                    if node.kind == 'Merge':
+#                        node.citations1 = ''
+#                        node.citations2 = ''
+#                        node.indcitations1 = ''
+#                        node.indcitations2 = ''
+#                        if 'art3' in node.data:
+#                            node.citations3 = ''
+#                            node.indcitations3 = ''
+#                    else:
+#                        node.citations = ''
+#                        node.indcitations = ''
 
         if citations:
             max_cit = max(cit_list)
@@ -478,7 +490,7 @@ def view_sugiyama_summary(graph, tex, deviation, transitivities, trans_bold, cit
                                }
 
         x_factor = 2.3
-        y_factor = 1
+#        y_factor = 1
         dummy_factor = 0.5
         merge_two_factor = 1.2
         merge_three_factor = 1.5
@@ -560,6 +572,8 @@ def view_sugiyama_summary(graph, tex, deviation, transitivities, trans_bold, cit
                                     name, layer_id*x_factor, y, table)
                                 y += merge_two_factor
                         else:
+                            if(node.citations<minimum_citations):
+                                continue
                             if authors_colored >= 0 and authors_colored <= 1:
                                 color = match_author_dict[node.name]
                             if citations:
@@ -657,6 +671,8 @@ def view_sugiyama_summary(graph, tex, deviation, transitivities, trans_bold, cit
                 continue
             no_edge = _check_if_edge(edge)
             if not no_edge:
+                if((edge.from_node.kind == 'Node' and edge.from_node.citations<minimum_citations) or (edge.to_node.kind == 'Node' and edge.to_node.citations<minimum_citations)):
+                    continue
                 if transitivities:
                     ewi = next(x for x in edge_weight_dict if edge.from_node.name == x['from'] and edge.to_node.name == x['to'])
                     if ewi['weight'] in weight_color_dict:
@@ -673,12 +689,15 @@ def view_sugiyama_summary(graph, tex, deviation, transitivities, trans_bold, cit
                 continue
             no_edge = _check_if_edge(edge)
             if not no_edge:
-                dummy_list = []
+                if((edge.from_node.kind == 'Node' and edge.from_node.citations<minimum_citations) or (edge.to_node.kind == 'Node' and edge.to_node.citations<minimum_citations)):
+                    continue
                 start = edge.from_node.name
                 end = edge.to_node.name
+                dummy_list = []
                 for de in edge.dummyedges:
                     dummy_list.append(de.from_node)
-                del dummy_list[-1]
+                if(len(dummy_list)>0):
+                    del dummy_list[-1]
                 dummy_list.reverse()
                 middle = ''
                 for dummy in dummy_list:
@@ -739,7 +758,12 @@ def view_sugiyama_summary(graph, tex, deviation, transitivities, trans_bold, cit
     node_dict = {'fromEdgesPerNode': node_fromEdges, 'toEdgesPerNode': node_toEdges, 'edgesPerNode': node_edges}
     print(node_dict)
 
-    correction_table = generate_correction_table(global_merges, trans_edges_leave)
+    print("before correction-table")
+    if(not(dont_show_edge_corrections)):
+        correction_table = generate_correction_table(global_merges, trans_edges_leave, minimum_citations)
+    else:
+        correction_table = ''
+    print("after correction-table")
 
     tikzCode += '''
     \\hspace{0.3cm}
@@ -832,7 +856,8 @@ def view_sugiyama_summary(graph, tex, deviation, transitivities, trans_bold, cit
     } %end arraystretch'''
 
     tikzCode += generate_tikz_foot(False)
-
+    
+    print(tikzCode)
 
     with open(os.path.join(tex, 'graph_summary.tex'), 'w') as file:
         file.write(tikzCode)

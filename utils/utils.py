@@ -29,6 +29,26 @@ def find_urls(string):
     url = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\), ]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', string)
     return url
 
+def compare_edges_numerical(list1, list2):
+    """
+    compares all incoming or outgoing edges from two nodes to examine if they could be merged
+    :param list1: list of all incoming or outgoing edges of a node
+    :param list2: list of the second node
+    :return: lists of all shared edges and different edges for both articles
+    """
+    same = 0
+    diff1 = 0
+    for elem in list1:
+        if elem in list2:
+            same = same + 1
+        else:
+            diff1 = diff1 + 1
+    diff2 = 0
+    for elem in list2:
+        if not(elem in list1):
+            diff2 = diff2 + 1
+    return same, diff1, diff2
+
 
 def compare_edges(list1, list2):
     """
@@ -125,7 +145,7 @@ def depth_first_search(efrom, edge, eto, draw_edges, stack, tel):
     :param draw_edges: list of all edges that will be drawn in the resulting graph
     :param stack: list of elements to remember for the depth-first-search, empty at the beginning
     :param tel: list of transitive edges that have already been found and will not be drawn in the resulting graph
-    :return: True iff the search was successfull and the latest stack
+    :return: True iff the search was successful and the latest stack
     '''
     elist = filter(lambda e: e.from_node == efrom and e != edge and e not in tel, draw_edges)
     elist_it1, elist_it2 = itertools.tee(elist, 2)
@@ -134,12 +154,13 @@ def depth_first_search(efrom, edge, eto, draw_edges, stack, tel):
             stack.append(elem)
             return True, stack
     for ed in elist_it2:
-        stack.append(ed)
-        s, stack = depth_first_search(ed.to_node, edge, eto, draw_edges, stack, tel)
-        if not s:
-            stack.pop()
-        else:
-            return True, stack
+        if not(ed in stack): # in order to avoid infinite loops!
+            stack.append(ed)
+            s, stack = depth_first_search(ed.to_node, edge, eto, draw_edges, stack, tel)
+            if not s:
+                stack.pop()
+            else:
+                return True, stack
     return False, stack
 
 

@@ -3,13 +3,14 @@ class ComponentFinder:
     calculates independant components (subraphs) within a graph
     """
 
-    def __init__(self, graph):
+    def __init__(self, graph, withSingleNodes):
         """
         initializes the components, each article/node gets its own component
         :param graph: model of the currently examined graph
         """
         self.graph = graph
         self.components = []
+        self.withSingleNodes = withSingleNodes 
         for article in graph['articles']:
             c = [article['key']]
             self.components.append(c)
@@ -56,13 +57,13 @@ class ComponentFinder:
 
     def find_edge(self, bibtex_key):
         """
-        find all edges that go out of the article with the given bibtex-key
+        find all edges that go out or coming in of the article with the given bibtex-key
         :param bibtex_key: key of the examined article
         :return: list of all detected edges
         """
         edges = []
         for edge in self.graph['edges']:
-            if edge['from'] == bibtex_key:
+            if edge['from'] == bibtex_key: # or edge['to'] == bibtex_key:
                 edges.append(edge)
         return edges
 
@@ -77,7 +78,7 @@ class ComponentFinder:
                 one_comps += component
         for component in one_comps:
             self.components.remove(next(i for i in self.components if component in i))
-        if len(one_comps) > 0:
+        if self.withSingleNodes and len(one_comps) > 0:
             self.components.append(one_comps)
         subgraphs = []
         for component in self.components:
