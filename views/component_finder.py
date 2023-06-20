@@ -10,7 +10,7 @@ class ComponentFinder:
         """
         self.graph = graph
         self.components = []
-        self.withSingleNodes = withSingleNodes 
+        self.withSingleNodes = withSingleNodes
         for article in graph['articles']:
             c = [article['key']]
             self.components.append(c)
@@ -27,7 +27,7 @@ class ComponentFinder:
             c2 = self.search_component(t)
             if c1 == c2:
                 continue
-            new_c = c1+c2
+            new_c = c1 + c2
             self.components.remove(c1)
             self.components.remove(c2)
             self.components.append(new_c)
@@ -63,7 +63,7 @@ class ComponentFinder:
         """
         edges = []
         for edge in self.graph['edges']:
-            if edge['from'] == bibtex_key: # or edge['to'] == bibtex_key:
+            if edge['from'] == bibtex_key:  # or edge['to'] == bibtex_key:
                 edges.append(edge)
         return edges
 
@@ -92,7 +92,7 @@ class ComponentFinder:
                 for edge in edge_list:
                     edges.append(edge)
             subgraph['years'] = years
-            edges_rem_dup = [i for n, i in enumerate(edges) if i not in edges[n+1:]]  # remove duplicates in edges
+            edges_rem_dup = [i for n, i in enumerate(edges) if i not in edges[n + 1:]]  # remove duplicates in edges
             subgraph['edges'] = edges_rem_dup
             subgraph['year_arts'] = {}
             for year in range(min(years), max(years) + 1):
@@ -164,11 +164,13 @@ class CandidateComponentFinder:
         :param c_own: current component
         :return: True iff components share a candidate
         """
+
         def _match_criterion(c_other):
             if any(filter(lambda x: c['art1'] == x['art1'] or c['art1'] == x['art2'], c_other)):
                 return True
             if any(filter(lambda x: c['art2'] == x['art1'] or c['art2'] == x['art2'], c_other)):
                 return True
             return False
+
         l = filter(lambda c_other: (c_other != c_own) and _match_criterion(c_other), self.components)
         return list(l)

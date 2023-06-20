@@ -14,7 +14,7 @@ def run_grobid(jsFile, pdf, tei):
     finalArticles = jsonfile['final selection articles']
 
     for article in finalArticles:
-        if article['note'] is not None:
+        if 'note' in article:
             print(article['title'])
             if find_urls(article['note']):
                 print(find_urls(article['note']))

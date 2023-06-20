@@ -22,3 +22,13 @@ def build_all(filename, tex):
     print(make)
 
     os.chdir('..')
+
+
+def compile_latex(file, folder):
+    wdir = os.getcwd()
+    os.chdir(folder)
+    subprocess.call(["pdflatex", "-interaction=nonstopmode", file])
+    subprocess.call(["biber", file])
+    subprocess.call(["pdflatex", "-interaction=nonstopmode", file])
+    subprocess.call(["pdflatex", "-interaction=nonstopmode", file])
+    os.chdir(wdir)

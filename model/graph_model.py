@@ -7,32 +7,39 @@ from utils.utils import key_to_md5, find_urls, find_author
 
 
 def run_graph(jsFile, tei, tex, original_bibtex_keys, without_interactive_queries):
-    with open(jsFile, 'r') as file: #encoding='utf8'
+    with open(jsFile, 'r') as file:  #encoding='utf8'
         jsonfile = json.load(file)
 
     articles = jsonfile['final selection articles']
 
-    if(not(original_bibtex_keys)):
+    for article in articles:
+        if "year" not in article:
+            article["year"] = "2030"
+        if "title" not in article:
+            article["title"] = "???"
+        if "author" not in article:
+            article["author"] = "???"
+    if (not (original_bibtex_keys)):
         for article in articles:
             article['bibtex_key'] = key_to_md5(article['bibtex_key'])
 
-    with open(os.path.join(tex, 'library.bib'), 'w') as l:
+    with open(os.path.join(tex, 'literature.bib'), 'w') as l:
         l.write(generate_bib(articles))
 
     graph = {}
     years = []
     for article in articles:
-        if article['note'] is None:
+        if "note" in article:
             continue
-        if article['year'] is not None:
+        if "year" in article:
             years.append(int(article['year']))
 
     graph['years'] = years
     graph['year_arts'] = {}
-    for year in range(min(years), max(years)+1):
+    for year in range(min(years), max(years) + 1):
         this_year_arts = []
         for article in articles:
-            if article['note'] is None:
+            if "note" in article:
                 continue
             if int(article['year']) == year:
                 this_year_arts.append(article['bibtex_key'])
@@ -41,18 +48,15 @@ def run_graph(jsFile, tei, tex, original_bibtex_keys, without_interactive_querie
     graph['articles'] = []
     for article in articles:
         authors = find_author(article['author'])
-        if article['note'] is None:
+        if "note" in article:
             continue
-        article_dict = {'title': article['title'],
-                        'author': authors,
-                        'key': article['bibtex_key'],
-                        'year': article['year']}
+        article_dict = {'title': article['title'], 'author': authors, 'key': article['bibtex_key'], 'year': article['year']}
         graph['articles'].append(article_dict)
 
     graph['edges'] = []
     namespace = '{http://www.tei-c.org/ns/1.0}'
     for article in articles:
-        if article['note'] is not None:
+        if "note" in article:
             if find_urls(article['note']):
                 tei_file = os.path.join(tei, key_to_md5(article['title']) + '.tei.xml')
             else:
@@ -85,8 +89,7 @@ def run_graph(jsFile, tei, tex, original_bibtex_keys, without_interactive_querie
                         art['doi'] = ''
                     if art['title'] is not article['title']:  # article should not cite itself
                         if citation_matching(art['doi'], refdoi, art['title'], reftitle, artauthors, refauthors, without_interactive_queries):
-                            graph['edges'].append({'from': article['bibtex_key'],
-                                                   'to': art['bibtex_key']})
+                            graph['edges'].append({'from': article['bibtex_key'], 'to': art['bibtex_key']})
                             break
 
     with open(os.path.join(tex, 'graph-model.json'), 'w') as jf:

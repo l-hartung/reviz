@@ -23,7 +23,7 @@ def find_same_authors(articles, threshold):
             if flag:
                 counter, number = find_matching_authors(a1['author'], a2['author'])
                 if counter != 0:
-                    score = counter/number
+                    score = counter / number
                     scores.append(score)
                     match = {'art1': a1, 'art2': a2, 'score': score}
                     all_matches.append(match)
@@ -56,7 +56,7 @@ def find_matching_authors(artauthors, otherauthors):
     """
     counter = 0
     number = len(artauthors) + len(otherauthors)
-    if len(artauthors)==0 or len(otherauthors)==0:
+    if len(artauthors) == 0 or len(otherauthors) == 0:
         return counter, number
     for author in artauthors:
         if author == artauthors[0]:
@@ -101,9 +101,9 @@ def cluster_candidates(sm, list_matches, av_matches):
     for elem in av_matches:
         for i in range(2):
             if elem[i] in sm_current:
-                if elem[1-i] not in sm_current:
-                    if candidate_matches(elem[1-i], sm_current, list_matches):
-                        sm_current.append(elem[1-i])
+                if elem[1 - i] not in sm_current:
+                    if candidate_matches(elem[1 - i], sm_current, list_matches):
+                        sm_current.append(elem[1 - i])
     for elem in list(av_matches):
         if elem[0] in sm_current or elem[1] in sm_current:
             av_matches.remove(elem)

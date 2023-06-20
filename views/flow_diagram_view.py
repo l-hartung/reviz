@@ -61,8 +61,7 @@ def run_flow(jsFile, tex):
 
     tikzCode += '''
     D -> [minimum layers=2] {{A[align=center, as={{Accepted records\\\\(n={})}}]}};
-    D -> [minimum layers=2] {{E[align=center, as={{Records rejected by\\\\exclusion criteria (n={})}}]}};'''.format(status_dict['A'],
-                                                                   num_articles - status_dict['D'] - status_dict['A'])
+    D -> [minimum layers=2] {{E[align=center, as={{Records rejected by\\\\exclusion criteria (n={})}}]}};'''.format(status_dict['A'], num_articles - status_dict['D'] - status_dict['A'])
 
     tikzCode += '''
     A -> [minimum layers=2] {{Q[align=center, as={{Records rejected by\\\\quality criteria (n={})}}]}};
