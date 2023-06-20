@@ -10,13 +10,13 @@ def generate_bib(articles):
     for article in articles:
         bib += '''@{0}{{{1},
         '''.format(article['document_type'], article['bibtex_key'])
-        if article['title'] != '':
+        if "title" in article and article['title'] != '':
             bib += '''title = {{{}}},
             '''.format(article['title'])
-        if article['author'] != '':
+        if "author" in article and article['author'] != '':
             bib += '''author = {{{}}},
             '''.format(article['author'])
-        if article['year'] != '':
+        if "year" in article and article['year'] != '':
             bib += '''year = {{{}}},
             '''.format(article['year'])
         if 'journal' in article and article['journal'] != '':

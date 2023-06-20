@@ -29,6 +29,7 @@ def find_urls(string):
     url = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\), ]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', string)
     return url
 
+
 def compare_edges_numerical(list1, list2):
     """
     compares all incoming or outgoing edges from two nodes to examine if they could be merged
@@ -45,7 +46,7 @@ def compare_edges_numerical(list1, list2):
             diff1 = diff1 + 1
     diff2 = 0
     for elem in list2:
-        if not(elem in list1):
+        if not (elem in list1):
             diff2 = diff2 + 1
     return same, diff1, diff2
 
@@ -154,7 +155,7 @@ def depth_first_search(efrom, edge, eto, draw_edges, stack, tel):
             stack.append(elem)
             return True, stack
     for ed in elist_it2:
-        if not(ed in stack): # in order to avoid infinite loops!
+        if not (ed in stack):  # in order to avoid infinite loops!
             stack.append(ed)
             s, stack = depth_first_search(ed.to_node, edge, eto, draw_edges, stack, tel)
             if not s:

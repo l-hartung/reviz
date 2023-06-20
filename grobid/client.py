@@ -21,14 +21,7 @@ class ApiClient(object):
     accept_type = 'application/xml'
     api_base = None
 
-    def __init__(
-            self,
-            base_url,
-            username=None,
-            api_key=None,
-            status_endpoint=None,
-            timeout=320
-    ):
+    def __init__(self, base_url, username=None, api_key=None, status_endpoint=None, timeout=320):
         """ Initialise client.
 
         Args:
@@ -93,14 +86,14 @@ class ApiClient(object):
         return {"username": self.username, "api_key": self.api_key}
 
     def call_api(
-            self,
-            method,
-            url,
-            headers=None,
-            params=None,
-            data=None,
-            files=None,
-            timeout=None,
+        self,
+        method,
+        url,
+        headers=None,
+        params=None,
+        data=None,
+        files=None,
+        timeout=None,
     ):
         """ Call API.
 
@@ -147,12 +140,7 @@ class ApiClient(object):
         Returns:
             ResultParser or ErrorParser.
         """
-        return self.call_api(
-            "GET",
-            url,
-            params=params,
-            **kwargs
-        )
+        return self.call_api("GET", url, params=params, **kwargs)
 
     def delete(self, url, params=None, **kwargs):
         """ Call the API with a DELETE request.
@@ -164,12 +152,7 @@ class ApiClient(object):
         Returns:
             ResultParser or ErrorParser.
         """
-        return self.call_api(
-            "DELETE",
-            url,
-            params=params,
-            **kwargs
-        )
+        return self.call_api("DELETE", url, params=params, **kwargs)
 
     def put(self, url, params=None, data=None, files=None, **kwargs):
         """ Call the API with a PUT request.
@@ -183,14 +166,7 @@ class ApiClient(object):
         Returns:
             An instance of ResultParser or ErrorParser.
         """
-        return self.call_api(
-            "PUT",
-            url,
-            params=params,
-            data=data,
-            files=files,
-            **kwargs
-        )
+        return self.call_api("PUT", url, params=params, data=data, files=files, **kwargs)
 
     def post(self, url, params=None, data=None, files=None, **kwargs):
         """ Call the API with a POST request.
@@ -204,14 +180,7 @@ class ApiClient(object):
         Returns:
             An instance of ResultParser or ErrorParser.
         """
-        return self.call_api(
-            method="POST",
-            url=url,
-            params=params,
-            data=data,
-            files=files,
-            **kwargs
-        )
+        return self.call_api(method="POST", url=url, params=params, data=data, files=files, **kwargs)
 
     def service_status(self, **kwargs):
         """ Call the API to get the status of the service.
@@ -219,9 +188,4 @@ class ApiClient(object):
         Returns:
             An instance of ResultParser or ErrorParser.
         """
-        return self.call_api(
-            'GET',
-            self.status_endpoint,
-            params={'format': 'json'},
-            **kwargs
-        )
+        return self.call_api('GET', self.status_endpoint, params={'format': 'json'}, **kwargs)

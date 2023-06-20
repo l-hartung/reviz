@@ -10,7 +10,6 @@ import concurrent.futures
 import glob
 from grobid.client import ApiClient
 import ntpath
-
 '''
 This version uses the standard ProcessPoolExecutor for parallelizing the concurrent calls to the GROBID services. 
 Given the limits of ThreadPoolExecutor (input stored in memory, blocking Executor.map until the whole input
@@ -19,6 +18,8 @@ We are moving from first batch to the second one only when the first is entirely
 slightly sub-optimal, but should scale better. However acquiring a list of million of files in directories would
 require something scalable too, which is not implemented for the moment.   
 '''
+
+
 class GrobidClient(ApiClient):
 
     def __init__(self, config_path='./grobid-config.json'):
@@ -34,11 +35,7 @@ class GrobidClient(ApiClient):
             self.config = json.loads(config_json)
         else:
             print('grobid-config.json was not found. Using default settings: localhost:8070')
-            self.config = {
-                "batch_size" : 1,
-                "grobid_port": "8070",
-                "grobid_server": "localhost"
-            }
+            self.config = {"batch_size": 1, "grobid_port": "8070", "grobid_server": "localhost"}
 
     def process(self, input, output, n, service, generateIDs, consolidate_header, consolidate_citations):
         batch_size_pdf = self.config['batch_size']
@@ -71,19 +68,12 @@ class GrobidClient(ApiClient):
             return
 
         print(pdf_file)
-        files = {
-            'input': (
-                pdf_file,
-                open(pdf_file, 'rb'),
-                'application/pdf',
-                {'Expires': '0'}
-            )
-        }
+        files = {'input': (pdf_file, open(pdf_file, 'rb'), 'application/pdf', {'Expires': '0'})}
 
-        the_url = 'http://'+self.config['grobid_server']
-        if len(self.config['grobid_port'])>0:
-            the_url += ":"+self.config['grobid_port']
-        the_url += "/api/"+service
+        the_url = 'http://' + self.config['grobid_server']
+        if len(self.config['grobid_port']) > 0:
+            the_url += ":" + self.config['grobid_port']
+        the_url += "/api/" + service
         #print(the_url)
 
         # set the GROBID parameters
@@ -95,12 +85,7 @@ class GrobidClient(ApiClient):
         if consolidate_citations:
             the_data['consolidateCitations'] = '1'
 
-        res, status = self.post(
-            url=the_url,
-            files=files,
-            data=the_data,
-            headers={'Accept': 'text/plain'}
-        )
+        res, status = self.post(url=the_url, files=files, data=the_data, headers={'Accept': 'text/plain'})
 
         #print(str(status))
         #print(res.text)
@@ -112,13 +97,14 @@ class GrobidClient(ApiClient):
             print('Processing failed with error ' + str(status))
         else:
             # writing TEI file
-            with io.open(filename,'w',encoding='utf8') as tei_file:
+            with io.open(filename, 'w', encoding='utf8') as tei_file:
                 tei_file.write(res.text)
 
     def process_citations(self, pdf, outputfolder):
         if not os.path.exists(outputfolder):
             os.mkdir(outputfolder)
         self.process_pdf(pdf, outputfolder, 'processReferences', True, True, True)
+
 
 # def test():
 #     client = GrobidClient()

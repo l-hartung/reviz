@@ -26,21 +26,34 @@ def calculate_merge_three(matches, candidate, subgraph, deviation, len_factor, d
             art1 = list(filter(lambda x: candidate['art1'] == x['key'], subgraph['articles']))[0]
             art2 = list(filter(lambda x: candidate['art2'] == x['key'], subgraph['articles']))[0]
             art3 = list(filter(lambda x: match['art1'] == x['key'], subgraph['articles']))[0]
-        same_f, diff1_f, diff2_f, diff3_f, diff12_f, diff23_f, diff13_f = compare_candidates(art1, art2, art3,
-                                                                                             'from')
-        same_t, diff1_t, diff2_t, diff3_t, diff12_t, diff23_t, diff13_t = compare_candidates(art1, art2, art3,
-                                                                                             'to')
+        same_f, diff1_f, diff2_f, diff3_f, diff12_f, diff23_f, diff13_f = compare_candidates(art1, art2, art3, 'from')
+        same_t, diff1_t, diff2_t, diff3_t, diff12_t, diff23_t, diff13_t = compare_candidates(art1, art2, art3, 'to')
         diff_sum = diff1_f + diff2_f + diff3_f + diff1_t + diff2_t + diff3_t
         diff_sum_2 = diff12_f + diff12_t + diff23_f + diff23_t + diff13_f + diff13_t
         if (len(diff_sum) <= deviation) and (len(diff_sum_2) <= deviation):
             c_len = float(len(same_f) + len(same_t))
             score = c_len * len_factor - len(diff_sum) * dev_factor
             three_candidate = {
-                'art1': art1['key'], 'art2': art2['key'], 'art3': art3['key'], 'same_from': same_f,
-                'diff1_from': diff1_f, 'diff2_from': diff2_f, 'diff3_from': diff3_f, 'diff12_from': diff12_f,
-                'diff23_from': diff23_f, 'diff13_from': diff13_f, 'same_to': same_t, 'diff1_to': diff1_t,
-                'diff2_to': diff2_t, 'diff3_to': diff3_t, 'diff12_to': diff12_t, 'diff23_to': diff23_t,
-                'diff13_to': diff13_t, 'dev': len(diff_sum), 'dev2': len(diff_sum_2), 'score': score
+                'art1': art1['key'],
+                'art2': art2['key'],
+                'art3': art3['key'],
+                'same_from': same_f,
+                'diff1_from': diff1_f,
+                'diff2_from': diff2_f,
+                'diff3_from': diff3_f,
+                'diff12_from': diff12_f,
+                'diff23_from': diff23_f,
+                'diff13_from': diff13_f,
+                'same_to': same_t,
+                'diff1_to': diff1_t,
+                'diff2_to': diff2_t,
+                'diff3_to': diff3_t,
+                'diff12_to': diff12_t,
+                'diff23_to': diff23_t,
+                'diff13_to': diff13_t,
+                'dev': len(diff_sum),
+                'dev2': len(diff_sum_2),
+                'score': score
             }
             mt.append(three_candidate)
     return mt
@@ -60,15 +73,15 @@ def calculate_merges(subgraph, deviation, minimum_citations):
     dev_factor = 0.5
     for i in range(len(subgraph['articles'])):
         art1 = subgraph['articles'][i]
-        for j in range(i+1,len(subgraph['articles'])-1,1):
+        for j in range(i + 1, len(subgraph['articles']) - 1, 1):
             art2 = subgraph['articles'][j]
             if (art1['key'] == art2['key']) or (art1['year'] != art2['year']):
                 continue
             if any(filter(lambda mc: mc['art1'] == art2['key'] and mc['art2'] == art1['key'], merge_candidates)):
                 continue
-            if(len(art1['to'])<minimum_citations or len(art2['to'])<minimum_citations):
+            if (len(art1['to']) < minimum_citations or len(art2['to']) < minimum_citations):
                 continue
-            
+
             same_fromSize = 0
             diff1_fromSize = 0
             for elem in art1['from']:
@@ -78,9 +91,9 @@ def calculate_merges(subgraph, deviation, minimum_citations):
                     diff1_fromSize = diff1_fromSize + 1
             diff2_fromSize = 0
             for elem in art2['from']:
-                if not(elem in art1['from']):
+                if not (elem in art1['from']):
                     diff2_fromSize = diff2_fromSize + 1
-            
+
             same_toSize = 0
             diff1_toSize = 0
             for elem in art1['to']:
@@ -90,20 +103,16 @@ def calculate_merges(subgraph, deviation, minimum_citations):
                     diff1_toSize = diff1_toSize + 1
             diff2_toSize = 0
             for elem in art2['to']:
-                if not(elem in art1['to']):
+                if not (elem in art1['to']):
                     diff2_toSize = diff2_toSize + 1
-            
+
             diff_sumSize = diff1_fromSize + diff2_fromSize + diff1_toSize + diff2_toSize
             if (diff_sumSize <= deviation) and (same_fromSize + same_toSize > 0):
                 same_from, diff1_from, diff2_from = compare_edges(art1['from'], art2['from'])
                 same_to, diff1_to, diff2_to = compare_edges(art1['to'], art2['to'])
                 c_len = float(same_fromSize + same_toSize)
                 score = c_len * len_factor - diff_sumSize * dev_factor
-                candidate = {
-                    'art1': art1['key'], 'art2': art2['key'], 'same_from': same_from, 'diff1_from': diff1_from,
-                    'diff2_from': diff2_from, 'same_to': same_to, 'diff1_to': diff1_to, 'diff2_to': diff2_to,
-                    'dev': diff_sumSize, 'score': score
-                }
+                candidate = {'art1': art1['key'], 'art2': art2['key'], 'same_from': same_from, 'diff1_from': diff1_from, 'diff2_from': diff2_from, 'same_to': same_to, 'diff1_to': diff1_to, 'diff2_to': diff2_to, 'dev': diff_sumSize, 'score': score}
                 merge_candidates.append(candidate)
 
     ccf = CandidateComponentFinder(merge_candidates)
@@ -155,7 +164,6 @@ def calculate_merges(subgraph, deviation, minimum_citations):
                             if comp.index(can) in indices:
                                 indices.remove(comp.index(can))
 
-
         indices = list(range(len(comp)))
         while len(indices) > 0:
             index = indices.pop(0)
@@ -186,7 +194,7 @@ def calculate_merges(subgraph, deviation, minimum_citations):
                     toBeRemoved = comp.index(match)
                     if toBeRemoved in indices:
                         indices.remove(comp.index(match))
-                    else :
+                    else:
                         print("The following item is not in indices:")
                         print(toBeRemoved)
                         print("indices:")

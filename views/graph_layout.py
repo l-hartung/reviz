@@ -70,8 +70,7 @@ class GraphLayouter:
 
     def find_layer_by_name(self, layer_name):
         """searches for a layer by name. Raises StopIteration if not found"""
-        return next(
-            x for x in self.layers if x.name == layer_name)
+        return next(x for x in self.layers if x.name == layer_name)
 
     def layers_between(self, first_layer, second_layer):
         """
@@ -134,29 +133,25 @@ class GraphLayouter:
         self.long_edges = list(filter(lambda e: e.span > 1, self.edges))
         self.short_edges = list(filter(lambda e: e.span <= 1, self.edges))
         for long_edge in self.long_edges:
-            if(long_edge.from_node.kind=='Node' and len(long_edge.from_node.data['to'])<minimum_citations):
+            if (long_edge.from_node.kind == 'Node' and len(long_edge.from_node.data['to']) < minimum_citations):
                 continue
             first_layer = long_edge.from_node.layer
             second_layer = long_edge.to_node.layer
             layers_between = self.layers_between(first_layer, second_layer)
             previous_node = long_edge.to_node
-            if(not(without_dummy_nodes)):
+            if (not (without_dummy_nodes)):
                 for between in layers_between:
-                    dummyname = "{}/{}/{}".format(long_edge.from_node.name,
-                                                              long_edge.to_node.name,
-                                                              between.name)
+                    dummyname = "{}/{}/{}".format(long_edge.from_node.name, long_edge.to_node.name, between.name)
                     dummy = between.create_dummy_node(dummyname)
                     dummy_edge = Edge(dummy, previous_node, span=1)
                     self.edges.append(dummy_edge)
                     previous_node = dummy
                     long_edge.dummyedges.append(dummy_edge)
-            last_edge = Edge(long_edge.from_node,
-                             previous_node, span=1)
+            last_edge = Edge(long_edge.from_node, previous_node, span=1)
             long_edge.dummyedges.append(last_edge)
             self.edges.append(last_edge)
         for le in self.long_edges:
             self.edges.remove(le)
-
 
     def calculate_edge_spans(self):
         """calculates the layers between the incoming and outgoing node of every edge"""
@@ -199,13 +194,13 @@ class GraphLayouter:
         for fixed_id, fixed_layer in enumerate(self.layers):
             if fixed_id + 1 == len(self.layers):
                 break
-            moving_layer = self.layers[fixed_id+1]
+            moving_layer = self.layers[fixed_id + 1]
             for node in moving_layer.nodes:
                 self.find_neighbors(node)
                 if len(node.neighbors) > 0:
                     self.calculate_barycenter(node)
                 else:
-                    node.barycenter = 0 #1000
+                    node.barycenter = 0  #1000
             sorted_nodes = sorted(moving_layer.nodes, key=lambda n: n.barycenter, reverse=False)
             for slot, node in enumerate(sorted_nodes):
                 node.slot = slot + 1
@@ -314,4 +309,3 @@ class DummyNode(Node):
     def __init__(self, name, layer):
         super().__init__(name, layer)
         self.kind = "Dummy"
-

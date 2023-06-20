@@ -149,7 +149,7 @@ This step is only required if you are not using Parsifal. It converts a bibtex f
 
 Use the command like:
 
-    docker-compose run --service-ports reviz bib2json --bib-file=<library.bib> <output.json>
+    docker-compose run --service-ports reviz bib2json --bib-file=<literature.bib> <output.json>
 
 #### `grobid` 
 
@@ -159,9 +159,13 @@ Call the command with:
 
     docker-compose run --service-ports reviz grobid <export.json> [--tei=<tei-folder>] [--pdf=<pdf-folder>]
 
-The optional argument `--tei` states where the output tei files from Grobid should be written to. If the folder (default `./tei-files`) does not already exist, it will be created. The optional argument `--pdf` determines where files that are automatically downloaded from the URL you supplied are written to.
+The optional argument `--tei` states where the output tei files from Grobid should be written to
+. If the folder (default `./tei-files`) does not already exist, it will be created
+. The optional argument `--pdf` determines where files that are automatically downloaded from the URL you supplied are written to.
 
-Processing with Grobid may take a while and may crash if you are using a virtual machine to run docker (Windows 7, 8, older versions of 10 or older versions of macOS) if not enough memory is provided. Details are available in the [grobid documentation](https://grobid.readthedocs.io/en/latest/Grobid-docker/). It is recommended to change the memory allocated to the virtual machine `default` to at least 3GB using VirtualBox.
+Processing with Grobid may take a while and may crash if you are using a virtual machine to run docker (Windows 7, 8, older versions of 10 or older versions of macOS) if not enough memory is provided
+. Details are available in the [grobid documentation](https://grobid.readthedocs.io/en/latest/Grobid-docker/)
+. It is recommended to change the memory allocated to the virtual machine `default` to at least 3GB using VirtualBox.
 
 #### `graph-model`
 
@@ -169,13 +173,18 @@ In this step, the references extracted using Grobid will be compared with all in
 
     docker-compose run --service-ports reviz graph-model <export.json> [--tei=<tei-folder>] [--tex=<tex-folder>]
 
-Use the same value for `--tei` as in the previous step. Once completed, the output will be written into `<tex-folder>/graph-model.json`.
+Use the same value for `--tei` as in the previous step
+. Once completed, the output will be written into `<tex-folder>/graph-model.json`.
 
-By using the option `--original-bibtex-keys` the original bibtex keys remain, otherwise they are replaced with md5 hashes. The md5 hashes have a fixed length and hence are very good for displaying, but if you like to use the original bibtex file you may choose this option. 
+By using the option `--original-bibtex-keys` the original bibtex keys remain, otherwise they are replaced with md5 hashes
+. The md5 hashes have a fixed length and hence are very good for displaying, but if you like to use the original bibtex file you may choose this option. 
 
-You may be asked for manual confirmation if the algorithm is not completely certain that a match was found. By using the option `--without-interactive-queries` ReViz does not ask for an interactive manual confirmation and assumes no citation matches in theses cases. 
+You may be asked for manual confirmation if the algorithm is not completely certain that a match was found
+. By using the option `--without-interactive-queries` ReViz does not ask for an interactive manual confirmation and assumes no citation matches in theses cases. 
 
-If you find that edges are missing from what you expect, you can add this information in `graph-model.json` by adding a new entry to the list `edges`. The entry must be a dictionary with keys `from` and `to` for the citing and cited node respectively. The values must be the keys from the according entry in the list `articles`.
+If you find that edges are missing from what you expect, you can add this information in `graph-model.json` by adding a new entry to the list `edges`
+. The entry must be a dictionary with keys `from` and `to` for the citing and cited node respectively
+. The values must be the keys from the according entry in the list `articles`.
 
 #### `draw` and `draw-summary`
 
